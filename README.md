@@ -1,6 +1,6 @@
 # Synapsery — indir
 
-**[⬇ Synapsery'yi indir (Windows ve macOS)](https://github.com/metegunesofficial/synapsery-surumler/releases/latest)**
+**[⬇ Synapsery'yi indir](https://github.com/metegunesofficial/synapsery-surumler/releases/latest)**
 
 ## Windows
 
@@ -12,6 +12,8 @@ Microsoft Store sürümü yayınlandığında Store'dan uyarısız kurulabilecek
 Gereksinim: Windows 10/11, 64 bit.
 
 ## macOS
+
+macOS paketleri sürümün **Assets** bölümünde göründüğünde:
 
 1. Apple Silicon için `Synapsery_<sürüm>_aarch64.dmg`, Intel için `Synapsery_<sürüm>_x64.dmg` dosyasını indir, aç ve Synapsery'yi **Uygulamalar** klasörüne sürükle.
 2. Synapsery'yi aç. "Apple doğrulayamadı" uyarısında **Bitti**'ye tıkla (Çöp Sepeti'ne taşıma).
