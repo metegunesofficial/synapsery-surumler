@@ -21,7 +21,7 @@ macOS paketleri sürümün **Assets** bölümünde göründüğünde:
 
 Bu onay bir kez verilir. macOS 14 ve öncesinde Synapsery'ye Control tuşuyla tıklayıp **Aç** demek de yeter.
 
-DMG "hasarlı" uyarısı verirse yeniden indir; sürerse Terminal'de `xattr -d com.apple.quarantine ~/Downloads/Synapsery_*.dmg` çalıştırıp DMG'yi yeniden aç.
+DMG "hasarlı" uyarısı verirse dosyayı yalnız bu sayfadaki resmi bağlantıdan yeniden indir; başka kaynaktan inen DMG'yi açma.
 
 ## Güncellemeler
 
