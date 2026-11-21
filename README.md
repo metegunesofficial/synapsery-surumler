@@ -7,7 +7,7 @@
 1. En son sürümün **Assets** bölümünden `Synapsery_<sürüm>_x64-setup.exe` dosyasını indir ve çalıştır. Yönetici yetkisi gerekmez.
 2. "Windows bilgisayarınızı korudu" penceresi çıkarsa **Ek bilgi > Yine de çalıştır**'a tıkla (bir kez).
 
-Microsoft Store sürümü hazırlanıyor; yayınlandığında Store'dan uyarısız kurulabilecek: [Synapsery — Microsoft Store](https://apps.microsoft.com/detail/9NDN4ZTDRS0Z)
+Microsoft Store sürümü hazırlanıyor; yayınlandığında Store'dan uyarısız kurulabilecek.
 
 Gereksinim: Windows 10/11, 64 bit.
 
