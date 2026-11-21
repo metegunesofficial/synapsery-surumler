@@ -17,9 +17,11 @@ macOS paketleri sürümün **Assets** bölümünde göründüğünde:
 
 1. Apple Silicon için `Synapsery_<sürüm>_aarch64.dmg`, Intel için `Synapsery_<sürüm>_x64.dmg` dosyasını indir, aç ve Synapsery'yi **Uygulamalar** klasörüne sürükle.
 2. Synapsery'yi aç. "Apple doğrulayamadı" uyarısında **Bitti**'ye tıkla (Çöp Sepeti'ne taşıma).
-3. **Sistem Ayarları > Gizlilik ve Güvenlik**'te aşağı kaydır, "Synapsery engellendi" satırında **Yine de Aç**'a tıkla, Mac parolanı gir ve son pencerede yine **Yine de Aç**'ı seç.
+3. **Sistem Ayarları > Gizlilik ve Güvenlik**'te aşağı kaydır, "Synapsery engellendi" satırında **Yine de Aç**'a tıkla; çıkan pencerede yine **Yine de Aç**'ı seç ve Mac parolanı gir.
 
 Bu onay bir kez verilir. macOS 14 ve öncesinde Synapsery'ye Control tuşuyla tıklayıp **Aç** demek de yeter.
+
+DMG "hasarlı" uyarısı verirse yeniden indir; sürerse Terminal'de `xattr -d com.apple.quarantine ~/Downloads/Synapsery_*.dmg` çalıştırıp DMG'yi yeniden aç.
 
 ## Güncellemeler
 
