@@ -49,6 +49,16 @@ test("release tag must match, not merely contain the version", () => {
   expect(() => validateReleaseTag("https://github.com/o/r/releases/latest", "0.1.48")).toThrow(/tag/);
 });
 
+test.each(["windws-x86_64", "windows-x64", "linux-", "darwin-aarch64-", "windows-x86_64-nsis-extra", ""])("rejects invalid platform target %j", target => {
+  const data = fixture();
+  expect(() => validateManifest(JSON.stringify({ ...data, platforms: { [target]: data.platforms["windows-x86_64"] } }))).toThrow(/Tauri platform/);
+});
+
+test.each(["windows-x86_64", "linux-i686", "linux-armv7", "windows-x86_64-nsis", "windows-x86_64-msi", "linux-x86_64-appimage", "linux-x86_64-deb", "linux-x86_64-rpm", "darwin-aarch64-app"])("accepts Tauri platform target %s", target => {
+  const data = fixture();
+  expect(validateManifest(JSON.stringify({ ...data, platforms: { [target]: data.platforms["windows-x86_64"] } })).platforms).toHaveProperty(target);
+});
+
 test("HTTP checks distinguish asset 2xx from README below 400", () => {
   expect(() => validateStatus(206, "asset", true)).not.toThrow();
   expect(() => validateStatus(302, "asset", true)).toThrow();
