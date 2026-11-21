@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "test": "bun test",
+    "denetim": "bun scripts/dagitim-denetimi.ts"
+  }
+}

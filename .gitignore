@@ -1,0 +1,14 @@
+.env*
+node_modules/
+dist/
+build/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.log
+logs/
+tmp/
+temp/
+*.tmp
