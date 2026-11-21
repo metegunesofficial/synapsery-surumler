@@ -36,6 +36,14 @@ test.each(["", "{", "null", "[]"])("rejects invalid manifest %j", (data) => {
   expect(() => validateManifest(data)).toThrow();
 });
 
+test.each(["2026-11-19", "2026-11-19T16:41:28", "2026-11-19 16:41:28Z", "2026-11-19T25:41:28Z"])("rejects incomplete or invalid timestamp %s", pub_date => {
+  expect(() => validateManifest(JSON.stringify({ ...fixture(), pub_date }))).toThrow(/pub_date/);
+});
+
+test.each(["2026-11-19T16:41:28Z", "2026-11-19t16:41:28.246z", "2026-11-19T16:41:28+03:00", "2026-11-19T16:41:28.1-05:30"])("accepts RFC 3339 timestamp %s", pub_date => {
+  expect(validateManifest(JSON.stringify({ ...fixture(), pub_date })).pub_date).toBe(pub_date);
+});
+
 test("release tag must match, not merely contain the version", () => {
   expect(() => validateReleaseTag("https://github.com/o/r/releases/tag/v0.1.49", "0.1.48")).toThrow(/tag/);
   expect(() => validateReleaseTag("https://github.com/o/r/releases/latest", "0.1.48")).toThrow(/tag/);

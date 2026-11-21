@@ -3,6 +3,7 @@ type Manifest = { version: string; pub_date: string; platforms: Record<string, P
 
 const semver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\+[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*)?$/;
 const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
+const timestamp = /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])[Tt](?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:[Zz]|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/;
 
 export function validateManifest(text: string): Manifest {
   let data: unknown;
@@ -10,7 +11,7 @@ export function validateManifest(text: string): Manifest {
   catch { throw new Error("latest.json: geçerli JSON değil / invalid JSON"); }
   if (!object(data)) throw new Error("latest.json: JSON object gerekli");
   if (typeof data.version !== "string" || !semver.test(data.version)) throw new Error("version: geçerli semver gerekli");
-  if (typeof data.pub_date !== "string" || !data.pub_date.trim() || !Number.isFinite(Date.parse(data.pub_date))) throw new Error("pub_date: geçerli tarih gerekli");
+  if (typeof data.pub_date !== "string" || !timestamp.test(data.pub_date) || !Number.isFinite(Date.parse(data.pub_date))) throw new Error("pub_date: geçerli RFC 3339 zaman damgası gerekli");
   if (!object(data.platforms) || Object.keys(data.platforms).length === 0) throw new Error("platforms: en az bir platform gerekli");
   for (const [name, platform] of Object.entries(data.platforms)) {
     if (!object(platform) || typeof platform.url !== "string") throw new Error(`${name}: URL gerekli`);
