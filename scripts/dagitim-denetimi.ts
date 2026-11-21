@@ -14,7 +14,7 @@ export function validateManifest(text: string): Manifest {
   if (typeof data.pub_date !== "string" || !timestamp.test(data.pub_date) || !Number.isFinite(Date.parse(data.pub_date))) throw new Error("pub_date: geçerli RFC 3339 zaman damgası gerekli");
   if (!object(data.platforms) || Object.keys(data.platforms).length === 0) throw new Error("platforms: en az bir platform gerekli");
   for (const [name, platform] of Object.entries(data.platforms)) {
-    if (!/^(linux|darwin|windows)-(x86_64|aarch64|i686|armv7)(?:-[a-z0-9]+)?$/.test(name)) throw new Error(`${name}: geçerli Tauri platform hedefi gerekli`);
+    if (!/^(?:(?:linux|darwin|windows)-(?:x86_64|aarch64|i686|armv7)|darwin-universal)(?:-[a-z0-9]+)?$/.test(name)) throw new Error(`${name}: geçerli Tauri platform hedefi gerekli`);
     if (!object(platform) || typeof platform.url !== "string") throw new Error(`${name}: URL gerekli`);
     const url = new URL(platform.url);
     if (!["http:", "https:"].includes(url.protocol)) throw new Error(`${name}: HTTP(S) URL gerekli`);
