@@ -48,6 +48,13 @@ test("rejects old names hidden in decoded signature comments", () => {
   expect(() => validateManifest(JSON.stringify(data))).toThrow(/signature.*eski ürün adı/);
 });
 
+test.each(["\t", "\n", "\r"])("rejects JSON-escaped control character inside URL slug %j", control => {
+  const data = fixture();
+  const slug = ["bra", control, "in", "os"].join("");
+  data.platforms["windows-x86_64"].url = `https://example.test/${slug}/v0.1.48/Synapsery.zip`;
+  expect(() => validateManifest(JSON.stringify(data))).toThrow(/URL.*kontrol karakteri/);
+});
+
 test("rejects old platform URLs even when JSON escapes hide the name", () => {
   const data = fixture();
   data.platforms["windows-x86_64"].url = `https://example.test/${["bra", "in", "os"].join("")}/v0.1.48/Synapsery.zip`;

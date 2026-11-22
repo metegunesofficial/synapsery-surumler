@@ -30,12 +30,18 @@ export function validateManifest(text: string): Manifest {
   for (const [name, platform] of Object.entries(data.platforms)) {
     if (!/^(?:(?:linux|darwin|windows)-(?:x86_64|aarch64|i686|armv7)|darwin-universal)(?:-[a-z0-9]+)?$/.test(name)) throw new Error(`${name}: geçerli Tauri platform hedefi gerekli`);
     if (!object(platform) || typeof platform.url !== "string") throw new Error(`${name}: URL gerekli`);
+    if (/[\u0000-\u001f\u007f]/.test(platform.url)) throw new Error(`${name}: URL kontrol karakteri içeriyor`);
     validateProductName(platform.url, `${name}: URL`);
     let decodedUrl: string;
     try { decodedUrl = decodeURIComponent(platform.url); }
     catch { throw new Error(`${name}: URL geçerli yüzde kodlaması gerekli`); }
     validateProductName(decodedUrl, `${name}: URL`);
     const url = new URL(platform.url);
+    validateProductName(url.href, `${name}: URL`);
+    let decodedHref: string;
+    try { decodedHref = decodeURIComponent(url.href); }
+    catch { throw new Error(`${name}: URL geçerli yüzde kodlaması gerekli`); }
+    validateProductName(decodedHref, `${name}: URL`);
     if (!["http:", "https:"].includes(url.protocol)) throw new Error(`${name}: HTTP(S) URL gerekli`);
     if (!url.pathname.includes(`/v${data.version}/`)) throw new Error(`${name}: version ile URL uyuşmuyor`);
     const basename = decodeURIComponent(url.pathname.split("/").at(-1)!);

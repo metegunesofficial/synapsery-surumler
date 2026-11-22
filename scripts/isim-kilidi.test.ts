@@ -9,6 +9,14 @@ import { findOldNames, validateProductName } from "./isim-denetimi";
 const scanFile = (file: string, text: string) => [...findOldNames(file, file), ...findOldNames(text, file)];
 const readTrackedFile = (root: string, file: string) => readFileSync(join(root, file), "utf8");
 
+test("satırlar arasına bölünmüş eski ad başlangıç satırında raporlanır", () => {
+  const name = ["Bra", "in"].join("");
+  expect(findOldNames(`Synapsery\n${name}\nos\n`, "fixture.txt")).toEqual(["fixture.txt:2: eski ürün adı"]);
+  expect(findOldNames(`${name}os ${name}\nos\n${name}os`, "fixture.txt")).toEqual([
+    "fixture.txt:1: eski ürün adı", "fixture.txt:3: eski ürün adı",
+  ]);
+});
+
 test("dosya yollarındaki URL karakterleri gerçek dosya adı olarak okunur", () => {
   const root = mkdtempSync(join(tmpdir(), "isim-kilidi-"));
   try {

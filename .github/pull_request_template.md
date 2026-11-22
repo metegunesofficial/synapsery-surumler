@@ -3,7 +3,7 @@
 - Değişiklik:
 - Gerekçe:
 
-## Kanıt
+## Doğrulama Kanıtı
 
 - Çalıştırılan komutlar ve gerçek çıktıları:
 - Canlı dağıtım denetimi sonucu:
