@@ -1,3 +1,5 @@
+import { validateProductName } from "./isim-denetimi";
+
 type Platform = { url: string; signature: string };
 type Manifest = { version: string; pub_date: string; platforms: Record<string, Platform> };
 
@@ -5,7 +7,19 @@ const semver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[a
 const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
 const timestamp = /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])[Tt](?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:[Zz]|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/;
 
+function validateJsonNames(value: unknown, label: string): void {
+  if (typeof value === "string") validateProductName(value, label);
+  else if (Array.isArray(value)) value.forEach((item, index) => validateJsonNames(item, `${label}[${index}]`));
+  else if (object(value)) {
+    for (const [key, item] of Object.entries(value)) {
+      validateProductName(key, `${label}: key`);
+      validateJsonNames(item, `${label}.${key}`);
+    }
+  }
+}
+
 export function validateManifest(text: string): Manifest {
+  validateProductName(text, "latest.json");
   let data: unknown;
   try { data = JSON.parse(text); }
   catch { throw new Error("latest.json: geçerli JSON değil / invalid JSON"); }
@@ -16,7 +30,18 @@ export function validateManifest(text: string): Manifest {
   for (const [name, platform] of Object.entries(data.platforms)) {
     if (!/^(?:(?:linux|darwin|windows)-(?:x86_64|aarch64|i686|armv7)|darwin-universal)(?:-[a-z0-9]+)?$/.test(name)) throw new Error(`${name}: geçerli Tauri platform hedefi gerekli`);
     if (!object(platform) || typeof platform.url !== "string") throw new Error(`${name}: URL gerekli`);
+    if (/[\u0000-\u001f\u007f]/.test(platform.url)) throw new Error(`${name}: URL kontrol karakteri içeriyor`);
+    validateProductName(platform.url, `${name}: URL`);
+    let decodedUrl: string;
+    try { decodedUrl = decodeURIComponent(platform.url); }
+    catch { throw new Error(`${name}: URL geçerli yüzde kodlaması gerekli`); }
+    validateProductName(decodedUrl, `${name}: URL`);
     const url = new URL(platform.url);
+    validateProductName(url.href, `${name}: URL`);
+    let decodedHref: string;
+    try { decodedHref = decodeURIComponent(url.href); }
+    catch { throw new Error(`${name}: URL geçerli yüzde kodlaması gerekli`); }
+    validateProductName(decodedHref, `${name}: URL`);
     if (!["http:", "https:"].includes(url.protocol)) throw new Error(`${name}: HTTP(S) URL gerekli`);
     if (!url.pathname.includes(`/v${data.version}/`)) throw new Error(`${name}: version ile URL uyuşmuyor`);
     const basename = decodeURIComponent(url.pathname.split("/").at(-1)!);
@@ -25,8 +50,10 @@ export function validateManifest(text: string): Manifest {
     if (typeof signature !== "string" || !signature.trim()) throw new Error(`${name}: signature boş veya eksik`);
     if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(signature)) throw new Error(`${name}: signature geçerli base64 değil`);
     const decoded = atob(signature);
+    validateProductName(decoded, `${name}: signature`);
     if (!decoded.split(/\s+/).includes(`file:${basename}`)) throw new Error(`${name}: signature file:${basename} içermiyor`);
   }
+  validateJsonNames(data, "latest.json");
   return data as Manifest;
 }
 

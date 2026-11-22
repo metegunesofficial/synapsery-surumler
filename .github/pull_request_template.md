@@ -3,7 +3,7 @@
 - Değişiklik:
 - Gerekçe:
 
-## Kanıt
+## Doğrulama Kanıtı
 
 - Çalıştırılan komutlar ve gerçek çıktıları:
 - Canlı dağıtım denetimi sonucu:
@@ -21,4 +21,4 @@ Politika commit'i:
 | --- | --- | --- |
 | global/ci-hizlandirma-kurallari.md:9-15 | | |
 | global/git-pr-disiplini.md:6-12 | | |
-| projects/brainos-surumler/areas/dagitim/rules.md:6-8 | | |
+| projects/synapsery-surumler/areas/dagitim/rules.md:6-8 | | |

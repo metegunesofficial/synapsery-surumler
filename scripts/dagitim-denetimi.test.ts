@@ -6,15 +6,60 @@ const fixture = () => ({
   pub_date: "2026-11-19T16:41:28.246Z",
   platforms: {
     "windows-x86_64": {
-      url: "https://github.com/metegunesofficial/brainos-surumler/releases/download/v0.1.48/Synapsery.zip",
+      url: "https://github.com/metegunesofficial/synapsery-surumler/releases/download/v0.1.48/Synapsery.zip",
       signature: btoa("trusted comment: timestamp:1795106410\tfile:Synapsery.zip\n"),
     },
   },
 });
 
-test("valid fixture accepts the legacy repository URL and matching release", () => {
+test("valid fixture accepts the repository URL and matching release", () => {
   expect(validateManifest(JSON.stringify(fixture())).version).toBe("0.1.48");
   expect(() => validateReleaseTag("https://github.com/metegunesofficial/synapsery-surumler/releases/tag/v0.1.48", "0.1.48")).not.toThrow();
+});
+
+test("rejects old product names anywhere in latest.json text", () => {
+  const notes = ["Bra", "in", "OS 2"].join("");
+  expect(() => validateManifest(JSON.stringify({ ...fixture(), notes }))).toThrow(/latest.json.*eski ürün adı/);
+});
+
+test.each(["value", "key"])("rejects JSON-escaped nested %s", kind => {
+  const name = ["bra", "in", "os"].join("");
+  const notes = [{ nested: kind === "key" ? { [name]: null } : [null, 2, false, name] }];
+  const text = JSON.stringify({ ...fixture(), notes }).replaceAll("b", "\\u0062");
+  expect(() => validateManifest(text)).toThrow(/eski ürün adı/);
+});
+
+test.each(["%62" + "rain" + "os", "bra" + "in%2Dos", "bra" + "in%20os", "%broken"])("rejects encoded old name or malformed URL %s", path => {
+  const data = fixture();
+  data.platforms["windows-x86_64"].url = `https://example.test/${path}/v0.1.48/Synapsery.zip`;
+  expect(() => validateManifest(JSON.stringify(data))).toThrow();
+});
+
+test("accepts clean nested JSON and valid URL encoding", () => {
+  const data = fixture();
+  data.platforms["windows-x86_64"].url = "https://example.test/%73afe/v0.1.48/Synapsery.zip";
+  expect(validateManifest(JSON.stringify({ ...data, notes: [{ nested: [null, false, 2, "Synapsery"] }] })).version).toBe(data.version);
+});
+
+test("rejects old names hidden in decoded signature comments", () => {
+  const data = fixture();
+  const name = ["Bra", "in", "_OS2"].join("");
+  data.platforms["windows-x86_64"].signature = btoa(`trusted comment: file:Synapsery.zip previous:${name}\n`);
+  expect(() => validateManifest(JSON.stringify(data))).toThrow(/signature.*eski ürün adı/);
+});
+
+test.each(["\t", "\n", "\r"])("rejects JSON-escaped control character inside URL slug %j", control => {
+  const data = fixture();
+  const slug = ["bra", control, "in", "os"].join("");
+  data.platforms["windows-x86_64"].url = `https://example.test/${slug}/v0.1.48/Synapsery.zip`;
+  expect(() => validateManifest(JSON.stringify(data))).toThrow(/URL.*kontrol karakteri/);
+});
+
+test("rejects old platform URLs even when JSON escapes hide the name", () => {
+  const data = fixture();
+  data.platforms["windows-x86_64"].url = `https://example.test/${["bra", "in", "os"].join("")}/v0.1.48/Synapsery.zip`;
+  const text = JSON.stringify(data).replaceAll("b", "\\u0062");
+  expect(() => validateManifest(text)).toThrow(/windows-x86_64: URL.*eski ürün adı/);
 });
 
 test.each([
