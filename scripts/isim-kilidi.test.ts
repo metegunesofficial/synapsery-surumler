@@ -1,10 +1,25 @@
 import { expect, test } from "bun:test";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { findOldNames, validateProductName } from "./isim-denetimi";
 
 const scanFile = (file: string, text: string) => [...findOldNames(file, file), ...findOldNames(text, file)];
+const readTrackedFile = (root: string, file: string) => readFileSync(join(root, file), "utf8");
+
+test("dosya yollarındaki URL karakterleri gerçek dosya adı olarak okunur", () => {
+  const root = mkdtempSync(join(tmpdir(), "isim-kilidi-"));
+  try {
+    for (const file of ["notes#1.md", "notes%20.md"]) {
+      writeFileSync(join(root, file), "Synapsery");
+      expect(readTrackedFile(root, file)).toBe("Synapsery");
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test("kilit içeriği temiz olsa da eski adlı dosya yolunu reddeder", () => {
   const path = `docs/${["Bra", "in", "OS"].join("")}/guide.md`;
@@ -16,11 +31,11 @@ test("takipli dosyalarda eski ürün adı bulunmaz", () => {
   const root = fileURLToPath(new URL("../", import.meta.url));
   const files = execFileSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf8" }).split("\0").filter(Boolean);
   expect(files.length).toBeGreaterThan(0);
-  const matches = files.flatMap(file => scanFile(file, readFileSync(new URL(file, new URL("../", import.meta.url)), "utf8")));
+  const matches = files.flatMap(file => scanFile(file, readTrackedFile(root, file)));
   expect(matches, matches.join("\n")).toEqual([]);
 });
 
-test.each(["OS", "OS 2", "OS2", "os", "os2", "os-surumler", " os", "-os", "OS.2"])("kilit ekilen eski ad çeşidini yakalar: %s", suffix => {
+test.each(["OS", "OS 2", "OS2", "os", "os2", "os-surumler", " os", "-os", "OS.2", "_os", "_os2"])("kilit ekilen eski ad çeşidini yakalar: %s", suffix => {
   const planted = ["Bra", "in", suffix].join("");
   expect(findOldNames(`Synapsery\n${planted}\n`, "fixture.txt")).toEqual(["fixture.txt:2: eski ürün adı"]);
   expect(() => validateProductName(planted, "latest.json")).toThrow(/latest.json:1/);

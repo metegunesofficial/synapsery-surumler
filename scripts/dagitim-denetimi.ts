@@ -44,6 +44,7 @@ export function validateManifest(text: string): Manifest {
     if (typeof signature !== "string" || !signature.trim()) throw new Error(`${name}: signature boş veya eksik`);
     if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(signature)) throw new Error(`${name}: signature geçerli base64 değil`);
     const decoded = atob(signature);
+    validateProductName(decoded, `${name}: signature`);
     if (!decoded.split(/\s+/).includes(`file:${basename}`)) throw new Error(`${name}: signature file:${basename} içermiyor`);
   }
   validateJsonNames(data, "latest.json");

@@ -29,7 +29,7 @@ test.each(["value", "key"])("rejects JSON-escaped nested %s", kind => {
   expect(() => validateManifest(text)).toThrow(/eski ürün adı/);
 });
 
-test.each(["%62" + "rain" + "os", "bra" + "in%2Dos", "%broken"])("rejects encoded old name or malformed URL %s", path => {
+test.each(["%62" + "rain" + "os", "bra" + "in%2Dos", "bra" + "in%20os", "%broken"])("rejects encoded old name or malformed URL %s", path => {
   const data = fixture();
   data.platforms["windows-x86_64"].url = `https://example.test/${path}/v0.1.48/Synapsery.zip`;
   expect(() => validateManifest(JSON.stringify(data))).toThrow();
@@ -39,6 +39,13 @@ test("accepts clean nested JSON and valid URL encoding", () => {
   const data = fixture();
   data.platforms["windows-x86_64"].url = "https://example.test/%73afe/v0.1.48/Synapsery.zip";
   expect(validateManifest(JSON.stringify({ ...data, notes: [{ nested: [null, false, 2, "Synapsery"] }] })).version).toBe(data.version);
+});
+
+test("rejects old names hidden in decoded signature comments", () => {
+  const data = fixture();
+  const name = ["Bra", "in", "_OS2"].join("");
+  data.platforms["windows-x86_64"].signature = btoa(`trusted comment: file:Synapsery.zip previous:${name}\n`);
+  expect(() => validateManifest(JSON.stringify(data))).toThrow(/signature.*eski ürün adı/);
 });
 
 test("rejects old platform URLs even when JSON escapes hide the name", () => {

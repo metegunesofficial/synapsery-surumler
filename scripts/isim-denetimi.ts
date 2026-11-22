@@ -1,4 +1,4 @@
-const oldName = new RegExp(["bra", "in", "[\\s.-]*", "os", "(?:[\\s.-]*2)?"].join(""), "i");
+const oldName = new RegExp(["bra", "in", "[\\s._-]*", "os", "(?:[\\s._-]*2)?"].join(""), "i");
 
 export function findOldNames(text: string, file: string): string[] {
   return text.split(/\r?\n/).flatMap((line, index) => oldName.test(line) ? [`${file}:${index + 1}: eski ürün adı`] : []);
