@@ -6,15 +6,27 @@ const fixture = () => ({
   pub_date: "2026-11-19T16:41:28.246Z",
   platforms: {
     "windows-x86_64": {
-      url: "https://github.com/metegunesofficial/brainos-surumler/releases/download/v0.1.48/Synapsery.zip",
+      url: "https://github.com/metegunesofficial/synapsery-surumler/releases/download/v0.1.48/Synapsery.zip",
       signature: btoa("trusted comment: timestamp:1795106410\tfile:Synapsery.zip\n"),
     },
   },
 });
 
-test("valid fixture accepts the legacy repository URL and matching release", () => {
+test("valid fixture accepts the repository URL and matching release", () => {
   expect(validateManifest(JSON.stringify(fixture())).version).toBe("0.1.48");
   expect(() => validateReleaseTag("https://github.com/metegunesofficial/synapsery-surumler/releases/tag/v0.1.48", "0.1.48")).not.toThrow();
+});
+
+test("rejects old product names anywhere in latest.json text", () => {
+  const notes = ["Bra", "in", "OS 2"].join("");
+  expect(() => validateManifest(JSON.stringify({ ...fixture(), notes }))).toThrow(/latest.json.*eski ürün adı/);
+});
+
+test("rejects old platform URLs even when JSON escapes hide the name", () => {
+  const data = fixture();
+  data.platforms["windows-x86_64"].url = `https://example.test/${["bra", "in", "os"].join("")}/v0.1.48/Synapsery.zip`;
+  const text = JSON.stringify(data).replaceAll("b", "\\u0062");
+  expect(() => validateManifest(text)).toThrow(/windows-x86_64: URL.*eski ürün adı/);
 });
 
 test.each([

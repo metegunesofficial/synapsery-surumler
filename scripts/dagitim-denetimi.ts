@@ -1,3 +1,5 @@
+import { validateProductName } from "./isim-denetimi";
+
 type Platform = { url: string; signature: string };
 type Manifest = { version: string; pub_date: string; platforms: Record<string, Platform> };
 
@@ -6,6 +8,7 @@ const object = (value: unknown): value is Record<string, unknown> => value !== n
 const timestamp = /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])[Tt](?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:[Zz]|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/;
 
 export function validateManifest(text: string): Manifest {
+  validateProductName(text, "latest.json");
   let data: unknown;
   try { data = JSON.parse(text); }
   catch { throw new Error("latest.json: geçerli JSON değil / invalid JSON"); }
@@ -16,6 +19,7 @@ export function validateManifest(text: string): Manifest {
   for (const [name, platform] of Object.entries(data.platforms)) {
     if (!/^(?:(?:linux|darwin|windows)-(?:x86_64|aarch64|i686|armv7)|darwin-universal)(?:-[a-z0-9]+)?$/.test(name)) throw new Error(`${name}: geçerli Tauri platform hedefi gerekli`);
     if (!object(platform) || typeof platform.url !== "string") throw new Error(`${name}: URL gerekli`);
+    validateProductName(platform.url, `${name}: URL`);
     const url = new URL(platform.url);
     if (!["http:", "https:"].includes(url.protocol)) throw new Error(`${name}: HTTP(S) URL gerekli`);
     if (!url.pathname.includes(`/v${data.version}/`)) throw new Error(`${name}: version ile URL uyuşmuyor`);
