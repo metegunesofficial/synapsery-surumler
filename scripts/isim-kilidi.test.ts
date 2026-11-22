@@ -4,11 +4,19 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { findOldNames, validateProductName } from "./isim-denetimi";
 
+const scanFile = (file: string, text: string) => [...findOldNames(file, file), ...findOldNames(text, file)];
+
+test("kilit içeriği temiz olsa da eski adlı dosya yolunu reddeder", () => {
+  const path = `docs/${["Bra", "in", "OS"].join("")}/guide.md`;
+  expect(scanFile(path, "Synapsery").join("\n")).toContain(path);
+  expect(scanFile("docs/Synapsery.md", "")).toEqual([]);
+});
+
 test("takipli dosyalarda eski ürün adı bulunmaz", () => {
   const root = fileURLToPath(new URL("../", import.meta.url));
   const files = execFileSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf8" }).split("\0").filter(Boolean);
   expect(files.length).toBeGreaterThan(0);
-  const matches = files.flatMap(file => findOldNames(readFileSync(new URL(file, new URL("../", import.meta.url)), "utf8"), file));
+  const matches = files.flatMap(file => scanFile(file, readFileSync(new URL(file, new URL("../", import.meta.url)), "utf8")));
   expect(matches, matches.join("\n")).toEqual([]);
 });
 

@@ -22,6 +22,25 @@ test("rejects old product names anywhere in latest.json text", () => {
   expect(() => validateManifest(JSON.stringify({ ...fixture(), notes }))).toThrow(/latest.json.*eski ürün adı/);
 });
 
+test.each(["value", "key"])("rejects JSON-escaped nested %s", kind => {
+  const name = ["bra", "in", "os"].join("");
+  const notes = [{ nested: kind === "key" ? { [name]: null } : [null, 2, false, name] }];
+  const text = JSON.stringify({ ...fixture(), notes }).replaceAll("b", "\\u0062");
+  expect(() => validateManifest(text)).toThrow(/eski ürün adı/);
+});
+
+test.each(["%62" + "rain" + "os", "bra" + "in%2Dos", "%broken"])("rejects encoded old name or malformed URL %s", path => {
+  const data = fixture();
+  data.platforms["windows-x86_64"].url = `https://example.test/${path}/v0.1.48/Synapsery.zip`;
+  expect(() => validateManifest(JSON.stringify(data))).toThrow();
+});
+
+test("accepts clean nested JSON and valid URL encoding", () => {
+  const data = fixture();
+  data.platforms["windows-x86_64"].url = "https://example.test/%73afe/v0.1.48/Synapsery.zip";
+  expect(validateManifest(JSON.stringify({ ...data, notes: [{ nested: [null, false, 2, "Synapsery"] }] })).version).toBe(data.version);
+});
+
 test("rejects old platform URLs even when JSON escapes hide the name", () => {
   const data = fixture();
   data.platforms["windows-x86_64"].url = `https://example.test/${["bra", "in", "os"].join("")}/v0.1.48/Synapsery.zip`;
